@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import RRuleSwift
+//import RRuleSwift
 
 public protocol RecurrencePickerDelegate: class {
     func recurrencePicker(_ picker: RecurrencePicker, didPickRecurrence recurrenceRule: RecurrenceRule?)

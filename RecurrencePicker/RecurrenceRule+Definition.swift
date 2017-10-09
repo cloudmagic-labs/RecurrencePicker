@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import RRuleSwift
+//import RRuleSwift
 
 public extension RecurrenceRule {
     public func isDailyRecurrence() -> Bool {

@@ -8,7 +8,7 @@
 
 import Foundation
 import EventKit
-import RRuleSwift
+//import RRuleSwift
 
 public extension RecurrenceRule {
     public static func dailyRecurrence() -> RecurrenceRule {

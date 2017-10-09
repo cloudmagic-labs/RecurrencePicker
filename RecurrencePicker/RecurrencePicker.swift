@@ -8,7 +8,7 @@
 
 import UIKit
 import EventKit
-import RRuleSwift
+//import RRuleSwift
 
 open class RecurrencePicker: UITableViewController {
     open var language: RecurrencePickerLanguage = .english {

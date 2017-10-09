@@ -8,7 +8,7 @@
 
 import UIKit
 import EventKit
-import RRuleSwift
+//import RRuleSwift
 
 internal protocol CustomRecurrenceViewControllerDelegate: class {
     func customRecurrenceViewController(_ controller: CustomRecurrenceViewController, didPickRecurrence recurrenceRule: RecurrenceRule)

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import RRuleSwift
+//import RRuleSwift
 
 public extension RecurrenceRule {
     public func toText(of language: RecurrencePickerLanguage = InternationalControl.shared.language, occurrenceDate: Date) -> String? {

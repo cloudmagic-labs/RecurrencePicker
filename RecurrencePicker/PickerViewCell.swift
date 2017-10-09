@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import RRuleSwift
+//import RRuleSwift
 
 internal enum PickerViewCellStyle {
     case frequency

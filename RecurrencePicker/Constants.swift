@@ -8,7 +8,7 @@
 
 import UIKit
 import EventKit
-import RRuleSwift
+//import RRuleSwift
 
 internal struct CellID {
     static let commonCell = "CommonCell"

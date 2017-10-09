@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import RRuleSwift
+//import RRuleSwift
 
 internal extension RecurrenceFrequency {
     internal var number: Int {

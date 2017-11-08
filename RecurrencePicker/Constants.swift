@@ -20,7 +20,7 @@ internal struct CellID {
 }
 
 internal struct Constant {
-    static let defaultRowHeight: CGFloat = 44
+    static let defaultRowHeight: CGFloat = 50
     static let pickerViewCellHeight: CGFloat = 215
     static let pickerRowHeight: CGFloat = 40
     static let pickerMaxRowCount = 999

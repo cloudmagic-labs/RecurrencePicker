@@ -24,6 +24,8 @@ open class RecurrencePicker: UITableViewController {
     open var separatorColor: UIColor?
     open var supportedCustomRecurrenceFrequencies = Constant.frequencies
     open var customRecurrenceMaximumInterval = Constant.pickerMaxRowCount
+	open var viewDidAppear = false
+	open var interactionController: UIPercentDrivenInteractiveTransition?
 
     fileprivate var isModal: Bool {
         return presentingViewController?.presentedViewController == self
@@ -40,10 +42,36 @@ open class RecurrencePicker: UITableViewController {
     }
 
     // MARK: - Life cycle
-    open override func viewDidLoad() {
+    open override func viewDidLoad()
+	{
         super.viewDidLoad()
         commonInit()
+		self.backgroundColor = .clear
+		self.view.backgroundColor = .clear
+		self.tableView.backgroundColor = .clear
+		self.navigationController?.isNavigationBarHidden = true
+		self.navigationController!.delegate = self;
+
     }
+
+	open override func viewDidAppear(_ animated: Bool)
+	{
+		super.viewDidAppear(animated)
+		if viewDidAppear == false {
+			viewDidAppear = true
+			let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+			let blurEffectView = UIVisualEffectView(effect: blurEffect)
+			blurEffectView.frame = self.navigationController!.view.bounds
+			blurEffectView.alpha = 0
+			blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+			self.navigationController?.view.insertSubview(blurEffectView, at: 0)
+
+			blurEffectView.fadeIn(duration: 0.15, completion: { (completed) in
+				print("displayed blurr view")
+				self.navigationController?.view.addBackgroundGradientOnView()
+			})
+		}
+	}
 
     open override func didMove(toParentViewController parent: UIViewController?) {
         if parent == nil {
@@ -53,10 +81,12 @@ open class RecurrencePicker: UITableViewController {
     }
 
     // MARK: - Actions
-    @objc func doneButtonTapped(_ sender: UIBarButtonItem) {
-        dismiss(animated: true) {
-            self.recurrencePickerDidPickRecurrence()
-        }
+    @objc func doneButtonTapped() {
+		self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
+			self.dismiss(animated: false) {
+				self.recurrencePickerDidPickRecurrence()
+			}
+		}
     }
 
     @objc func closeButtonTapped(_ sender: UIBarButtonItem) {
@@ -66,6 +96,39 @@ open class RecurrencePicker: UITableViewController {
 
 extension RecurrencePicker {
     // MARK: - Table view data source and delegate
+
+	open override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+		if section == 0 {
+			return 121
+		}
+		return 20
+	}
+
+	open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 121))
+		if section != 0 {
+			headerView.frame = CGRect.zero
+			return headerView
+		}
+		let label:UILabel = UILabel()
+		label.translatesAutoresizingMaskIntoConstraints = false
+		headerView.addSubview(label)
+		label.backgroundColor = UIColor.clear;
+
+		label.font = CMViewUtilities.shared().lightFont(25)
+		label.textColor = UIColor.white.withAlphaComponent(0.7)
+		label.text = "Repeat"
+
+
+		let hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-26-[label]-26-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+		let vConstraint = NSLayoutConstraint.constraints(withVisualFormat: "V:|-58-[label]-10-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+
+		NSLayoutConstraint.activate(hConstraint)
+		NSLayoutConstraint.activate(vConstraint)
+		return headerView;
+	}
+
+
     open override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
@@ -87,36 +150,34 @@ extension RecurrencePicker {
     }
 
     open override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCell(withIdentifier: CellID.basicRecurrenceCell)
-        if cell == nil {
-            cell = UITableViewCell(style: .default, reuseIdentifier: CellID.basicRecurrenceCell)
-        }
 
-        if indexPath.section == 0 {
-            cell?.accessoryType = .none
-            cell?.textLabel?.text = Constant.basicRecurrenceStrings()[indexPath.row]
-        } else {
-            cell?.accessoryType = .disclosureIndicator
-            cell?.textLabel?.text = LocalizedString("RecurrencePicker.textLabel.custom")
-        }
+		let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
+		cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
 
-        let checkmark = UIImage(named: "checkmark", in: Bundle(for: type(of: self)), compatibleWith: nil)
-        cell?.imageView?.image = checkmark?.withRenderingMode(.alwaysTemplate)
 
-        if indexPath == selectedIndexPath {
-            cell?.imageView?.isHidden = false
-        } else {
-            cell?.imageView?.isHidden = true
-        }
-        return cell!
+		if indexPath.section == 0 {
+			cell.accessoryType = .none
+			cell.titleLabel.text = Constant.basicRecurrenceStrings()[indexPath.row]
+		} else {
+			cell.accessoryType = .disclosureIndicator
+			cell.titleLabel.text = LocalizedString("RecurrencePicker.textLabel.custom")
+		}
+
+		if indexPath == selectedIndexPath {
+			cell.tickIcon.isHidden = false
+		} else {
+			cell.tickIcon.isHidden = true
+		}
+
+		return cell
     }
 
     open override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let lastSelectedCell = tableView.cellForRow(at: selectedIndexPath)
-        let currentSelectedCell = tableView.cellForRow(at: indexPath)
+		let lastSelectedCell = tableView.cellForRow(at: selectedIndexPath) as! NTCNotifyMeTableViewCell
+		let currentSelectedCell = tableView.cellForRow(at: indexPath) as! NTCNotifyMeTableViewCell
 
-        lastSelectedCell?.imageView?.isHidden = true
-        currentSelectedCell?.imageView?.isHidden = false
+        lastSelectedCell.tickIcon.isHidden = true
+        currentSelectedCell.tickIcon.isHidden = false
 
         selectedIndexPath = indexPath
 
@@ -163,18 +224,34 @@ extension RecurrencePicker {
     // MARK: - Helper
     fileprivate func commonInit() {
         navigationItem.title = LocalizedString("RecurrencePicker.navigation.title")
-        if isModal {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: LocalizedString("Done"), style: .done, target: self, action: #selector(doneButtonTapped(_:)))
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: LocalizedString("Close"), style: .done, target: self, action: #selector(closeButtonTapped(_:)))
-        }
-        navigationController?.navigationBar.tintColor = tintColor
-        tableView.tintColor = tintColor
-        if let backgroundColor = backgroundColor {
-            tableView.backgroundColor = backgroundColor
-        }
-        if let separatorColor = separatorColor {
-            tableView.separatorColor = separatorColor
-        }
+		NTCNotifyMeTableViewCell.registerCellForTableView(self.tableView)
+
+		tableView.separatorStyle = .none
+
+		let doneButton = UIButton(type: .custom)
+		doneButton.backgroundColor = .clear
+		doneButton.addTarget(self, action: #selector(RecurrencePicker.doneButtonTapped), for: .touchUpInside)
+
+
+		let font = CMViewUtilities.shared().regularFont(14)
+		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
+		textAttributes[NSForegroundColorAttributeName] = UIColor.white
+		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: textAttributes), for: .normal)
+		doneButton.translatesAutoresizingMaskIntoConstraints = false
+		// for highlight state
+		let highlightFont = CMViewUtilities.shared().regularFont(14)
+		var highlightTextAttributes = [NSFontAttributeName: highlightFont, NSKernAttributeName: 1.0] as [String : Any]
+		highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
+		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: highlightTextAttributes), for: .highlighted)
+		self.navigationController?.view.addSubview(doneButton)
+
+		let leadingConstraint = NSLayoutConstraint(item: doneButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .leading, multiplier: 1, constant: 0)
+		let trailingConstraint = NSLayoutConstraint(item: doneButton, attribute: .trailing, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .trailing, multiplier: 1, constant: 0)
+		let bottomConstraint = NSLayoutConstraint(item: doneButton, attribute: .bottom, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .bottom, multiplier: 1, constant: 0)
+		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 60)
+
+		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
+
         updateSelectedIndexPath(withRule: recurrenceRule)
     }
 
@@ -271,10 +348,42 @@ extension RecurrencePicker {
     }
 }
 
-extension RecurrencePicker: CustomRecurrenceViewControllerDelegate {
+extension RecurrencePicker: CustomRecurrenceViewControllerDelegate, UINavigationControllerDelegate {
     // MARK: - CustomRecurrenceViewController delegate
     func customRecurrenceViewController(_ controller: CustomRecurrenceViewController, didPickRecurrence recurrenceRule: RecurrenceRule) {
         self.recurrenceRule = recurrenceRule
         updateRecurrenceRuleText()
     }
+
+
+	//MARK: UIViewControllerTransitioningDelegate Methods
+	func NTCEventsPushPopAnimatorForPresentation(presenting: Bool) -> UIViewControllerAnimatedTransitioning
+	{
+		let animator = NTCEventsPushPopAnimator()
+		animator.isPresenting = presenting
+		return animator
+	}
+
+	func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning?
+	{
+		return self.NTCEventsPushPopAnimatorForPresentation(presenting: true)
+	}
+
+	func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning?
+	{
+		return self.NTCEventsPushPopAnimatorForPresentation(presenting: false)
+	}
+
+	//MARK: UINavigationControllerDelegate Methods
+	public func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning?
+	{
+		return self.NTCEventsPushPopAnimatorForPresentation(presenting: operation == UINavigationControllerOperation.push)
+	}
+
+	public func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning?
+	{
+		return self.interactionController
+	}
+
+
 }

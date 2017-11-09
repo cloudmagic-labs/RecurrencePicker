@@ -65,6 +65,7 @@ internal class PickerViewCell: UITableViewCell {
         super.awakeFromNib()
         selectionStyle = .none
         accessoryType = .none
+		backgroundColor = .clear
     }
 }
 
@@ -86,19 +87,33 @@ extension PickerViewCell: UIPickerViewDataSource, UIPickerViewDelegate {
         }
     }
 
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        switch style {
-        case .frequency:
-            return Constant.frequencyStrings()[supportedFrequencies[row].number]
-        case .interval:
-            if component == 0 {
-                return String(row + 1)
-            } else {
-                let unit = interval == 1 ? Constant.unitStrings()[frequency.number] : Constant.pluralUnitStrings()[frequency.number]
-                return unit.lowercased()
-            }
-        }
-    }
+	func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+
+		var pickerLabel = view as? UILabel;
+
+		if (pickerLabel == nil)
+		{
+			pickerLabel = UILabel()
+
+			pickerLabel?.font = CMViewUtilities.shared().lightFont(20)
+			pickerLabel?.textColor = .white
+			pickerLabel?.textAlignment = .center
+		}
+
+		switch style {
+		case .frequency:
+			pickerLabel?.text =  Constant.frequencyStrings()[supportedFrequencies[row].number]
+		case .interval:
+			if component == 0 {
+				pickerLabel?.text =  String(row + 1)
+			} else {
+				let unit = interval == 1 ? Constant.unitStrings()[frequency.number] : Constant.pluralUnitStrings()[frequency.number]
+				pickerLabel?.text =  unit.lowercased()
+			}
+		}
+
+		return pickerLabel!
+	}
 
     func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
         return Constant.pickerRowHeight

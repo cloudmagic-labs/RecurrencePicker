@@ -20,7 +20,7 @@ internal class SelectorItemCell: UICollectionViewCell {
 
     internal func setItemSelected(_ selected: Bool) {
         isItemSelected = selected
-        backgroundColor = selected ? tintColor : UIColor.white
-        textLabel.textColor = selected ? UIColor.white : UIColor.black
+        backgroundColor = selected ? UIColor.white.withAlphaComponent(0.08) : UIColor.white.withAlphaComponent(0.04)
+        textLabel.textColor = UIColor.white.withAlphaComponent(0.8)
     }
 }

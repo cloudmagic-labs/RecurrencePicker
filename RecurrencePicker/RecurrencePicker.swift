@@ -17,7 +17,7 @@ open class RecurrencePicker: UITableViewController {
         }
     }
     open weak var delegate: RecurrencePickerDelegate?
-    open var tintColor = UIColor.blue
+    open var tintColor = UIColor.yellow
     open var calendar = Calendar.current
     open var occurrenceDate = Date()
     open var backgroundColor: UIColor?
@@ -154,12 +154,11 @@ extension RecurrencePicker {
 		let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
 		cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
 
+		cell.accessoryType = .none
 
 		if indexPath.section == 0 {
-			cell.accessoryType = .none
 			cell.titleLabel.text = Constant.basicRecurrenceStrings()[indexPath.row]
 		} else {
-			cell.accessoryType = .disclosureIndicator
 			cell.titleLabel.text = LocalizedString("RecurrencePicker.textLabel.custom")
 		}
 
@@ -213,7 +212,15 @@ extension RecurrencePicker {
             }
             customRecurrenceViewController.recurrenceRule = rule
 
-            navigationController?.pushViewController(customRecurrenceViewController, animated: true)
+
+			let navController = UINavigationController(rootViewController: customRecurrenceViewController)
+			navController.modalPresentationStyle = .overCurrentContext
+			navController.isNavigationBarHidden = false
+			self.navigationController!.present(navController, animated: false, completion: nil)
+
+
+
+//            navigationController?.pushViewController(customRecurrenceViewController, animated: true)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -251,6 +258,17 @@ extension RecurrencePicker {
 		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 60)
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
+
+		let blur = UIVisualEffectView(effect: UIBlurEffect(style:
+			UIBlurEffectStyle.dark))
+		blur.frame = doneButton.bounds
+		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
+		blur.alpha = 0.7
+		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+		doneButton.insertSubview(blur, at: 0)
+
+		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+
 
         updateSelectedIndexPath(withRule: recurrenceRule)
     }

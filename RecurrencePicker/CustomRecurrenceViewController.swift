@@ -15,6 +15,7 @@ internal protocol CustomRecurrenceViewControllerDelegate: class {
 }
 
 internal class CustomRecurrenceViewController: UITableViewController, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
+
     internal weak var delegate: CustomRecurrenceViewControllerDelegate?
     internal var occurrenceDate: Date!
     internal var tintColor: UIColor!
@@ -29,7 +30,7 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 
 	open var viewDidAppear = false
 	open var interactionController: UIPercentDrivenInteractiveTransition?
-
+	let backButton = UIButton(type: .custom)
 
     fileprivate var isShowingFrequencyPicker: Bool {
         return isShowingPickerView && pickerViewStyle == .frequency
@@ -52,7 +53,7 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 		self.navigationController?.isNavigationBarHidden = true
 		self.navigationController!.delegate = self;
 		self.tableView.separatorStyle = .none
-
+		self.setUpBackButton()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
 			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
@@ -96,12 +97,22 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 		super.viewWillLayoutSubviews()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
+			self.backButton.isHidden = true
+		}else{
+			self.backButton.isHidden = false
 		}
 	}
 
 	@objc func doneButtonTapped() {
 		delegate?.customRecurrenceViewController(self, didPickRecurrence: recurrenceRule)
 
+		self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
+			self.dismiss(animated: false) {
+			}
+		}
+	}
+
+	@objc func closeButtonTapped() {
 		self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
 			self.dismiss(animated: false) {
 			}
@@ -425,6 +436,22 @@ extension CustomRecurrenceViewController {
 
 extension CustomRecurrenceViewController {
     // MARK: - Helper
+
+	fileprivate func setUpBackButton() {
+		backButton.backgroundColor = .clear
+		backButton.translatesAutoresizingMaskIntoConstraints = false
+		backButton.isHidden = false
+		backButton.addTarget(self, action: #selector(CustomRecurrenceViewController.closeButtonTapped), for: .touchUpInside)
+		backButton.setImage(UIImage(named:"cal-back"), for: .normal)
+
+		let leadingConstraint = NSLayoutConstraint(item: backButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .leading, multiplier: 1, constant: 0)
+		let topConstraint = NSLayoutConstraint(item: backButton, attribute: .top, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .top, multiplier: 1, constant: 0)
+		let width = NSLayoutConstraint(item: backButton, attribute: .width, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 55)
+		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 50)
+		self.navigationController?.view.addSubview(backButton)
+		self.navigationController!.view.addConstraints([leadingConstraint, topConstraint, width, height])
+	}
+	
     fileprivate func commonInit() {
 //        navigationItem.title = LocalizedString("RecurrencePicker.textLabel.custom")
 //        navigationController?.navigationBar.tintColor = tintColor

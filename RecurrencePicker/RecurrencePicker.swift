@@ -26,6 +26,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
     open var customRecurrenceMaximumInterval = Constant.pickerMaxRowCount
 	open var viewDidAppear = false
 	open var interactionController: UIPercentDrivenInteractiveTransition?
+	let backButton = UIButton(type: .custom)
 
     fileprivate var isModal: Bool {
         return presentingViewController?.presentedViewController == self
@@ -55,6 +56,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		self.tableView.backgroundColor = .clear
 		self.navigationController?.isNavigationBarHidden = true
 		self.navigationController!.delegate = self;
+		self.setUpBackButton()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
 			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
@@ -98,6 +100,9 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		super.viewWillLayoutSubviews()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
+			self.backButton.isHidden = true
+		}else{
+			self.backButton.isHidden = false
 		}
 	}
 
@@ -118,8 +123,11 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
     }
 
     @objc func closeButtonTapped(_ sender: UIBarButtonItem) {
-        dismiss(animated: true, completion: nil)
-    }
+		self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
+			self.dismiss(animated: false) {
+			}
+		}
+	}
 }
 
 extension RecurrencePicker {
@@ -274,7 +282,6 @@ extension RecurrencePicker {
 		doneButton.backgroundColor = .clear
 		doneButton.addTarget(self, action: #selector(RecurrencePicker.doneButtonTapped), for: .touchUpInside)
 
-
 		let font = CMViewUtilities.shared().regularFont(14)
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
@@ -317,6 +324,21 @@ extension RecurrencePicker {
 		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
         updateSelectedIndexPath(withRule: recurrenceRule)
     }
+
+	fileprivate func setUpBackButton() {
+		backButton.backgroundColor = .clear
+		backButton.translatesAutoresizingMaskIntoConstraints = false
+		backButton.isHidden = false
+		backButton.addTarget(self, action: #selector(RecurrencePicker.closeButtonTapped(_:)), for: .touchUpInside)
+		backButton.setImage(UIImage(named:"cal-back"), for: .normal)
+
+		let leadingConstraint = NSLayoutConstraint(item: backButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .leading, multiplier: 1, constant: 0)
+		let topConstraint = NSLayoutConstraint(item: backButton, attribute: .top, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .top, multiplier: 1, constant: 0)
+		let width = NSLayoutConstraint(item: backButton, attribute: .width, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 55)
+		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 50)
+		self.navigationController?.view.addSubview(backButton)
+		self.navigationController!.view.addConstraints([leadingConstraint, topConstraint, width, height])
+	}
 
     fileprivate func updateSelectedIndexPath(withRule recurrenceRule: RecurrenceRule?) {
         guard let recurrenceRule = recurrenceRule else {

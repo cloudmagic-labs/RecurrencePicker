@@ -620,7 +620,7 @@ extension CustomRecurrenceViewController {
 		if (self.tableView.frame.contains(touchPoint)) {
 			return false
 		}
-		return false
+		return true
 	}
 
 	public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {

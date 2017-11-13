@@ -24,7 +24,6 @@ internal struct Constant {
     static let pickerViewCellHeight: CGFloat = 215
     static let pickerRowHeight: CGFloat = 40
     static let pickerMaxRowCount = 999
-    static let detailTextColor = UIColor.white
 
     static let selectorVerticalPadding: CGFloat = 1
     static let gridLineWidth: CGFloat = 0.5

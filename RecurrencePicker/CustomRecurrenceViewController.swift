@@ -14,7 +14,7 @@ internal protocol CustomRecurrenceViewControllerDelegate: class {
     func customRecurrenceViewController(_ controller: CustomRecurrenceViewController, didPickRecurrence recurrenceRule: RecurrenceRule)
 }
 
-internal class CustomRecurrenceViewController: UITableViewController, UINavigationControllerDelegate {
+internal class CustomRecurrenceViewController: UITableViewController, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
     internal weak var delegate: CustomRecurrenceViewControllerDelegate?
     internal var occurrenceDate: Date!
     internal var tintColor: UIColor!
@@ -47,14 +47,30 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
     // MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        commonInit()
 		self.view.backgroundColor = .clear
 		self.tableView.backgroundColor = .clear
 		self.navigationController?.isNavigationBarHidden = true
 		self.navigationController!.delegate = self;
 		self.tableView.separatorStyle = .none
 
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			self.tableView.layer.cornerRadius = 10.0
+			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
+			let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
+			tapGesture.cancelsTouchesInView = false
+			self.navigationController!.view.addGestureRecognizer(tapGesture)
+			tapGesture.delegate = self
+		}
+
     }
+
+	func tapBlurButton(_ sender: UITapGestureRecognizer) {
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
+				self.dismiss(animated: false, completion: nil)
+			}
+		}
+	}
 
 	override func viewDidAppear(_ animated: Bool)
 	{
@@ -72,15 +88,16 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 				print("displayed blurr view")
 				self.navigationController?.view.addBackgroundGradientOnView()
 			})
+			commonInit()
 		}
 	}
 
-//    override func didMove(toParentViewController parent: UIViewController?) {
-//        if parent == nil {
-//            // navigation is popped
-//            delegate?.customRecurrenceViewController(self, didPickRecurrence: recurrenceRule)
-//        }
-//    }
+	open override func viewWillLayoutSubviews() {
+		super.viewWillLayoutSubviews()
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
+		}
+	}
 
 	@objc func doneButtonTapped() {
 		delegate?.customRecurrenceViewController(self, didPickRecurrence: recurrenceRule)
@@ -237,8 +254,13 @@ extension CustomRecurrenceViewController {
 	override func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int)
 	{
 		let footer : UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
+		}else {
+			footer.textLabel?.textColor = UIColor.black.withAlphaComponent(0.8)
+		}
+
 		footer.textLabel?.font = CMViewUtilities.shared().lightFont(13)
-		footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
 		footer.textLabel?.text = "\n" + recurrenceRule.toText(occurrenceDate: occurrenceDate)!
 	}
 
@@ -274,28 +296,44 @@ extension CustomRecurrenceViewController {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: CellID.customRecurrenceViewCell)
             }
             cell?.accessoryType = .none
-			cell?.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+				cell?.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+				cell!.textLabel!.textColor = UIColor.white.withAlphaComponent(0.8)
+			}else{
+				cell?.backgroundColor = UIColor.black.withAlphaComponent(0.04)
+				cell!.textLabel!.textColor = UIColor.black.withAlphaComponent(0.8)
+			}
 
-			cell!.textLabel!.textColor = UIColor.white.withAlphaComponent(0.8)
 			cell!.textLabel!.font = CMViewUtilities.shared().regularFont(16)
 			cell!.detailTextLabel!.font = CMViewUtilities.shared().regularFont(15)
+
+			var detailTextColor = UIColor.black
+
+			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+				detailTextColor = UIColor.white
+			}
+
 
             if indexPath.row == 0 {
                 cell?.textLabel?.text = LocalizedString("CustomRecurrenceViewController.textLabel.frequency")
                 cell?.detailTextLabel?.text = Constant.frequencyStrings()[recurrenceRule.frequency.number]
 
-                cell?.detailTextLabel?.textColor = isShowingFrequencyPicker ? tintColor : Constant.detailTextColor
+                cell?.detailTextLabel?.textColor = isShowingFrequencyPicker ? tintColor : detailTextColor
             } else {
                 cell?.textLabel?.text = LocalizedString("CustomRecurrenceViewController.textLabel.interval")
                 cell?.detailTextLabel?.text = unitStringForIntervalCell()
-                cell?.detailTextLabel?.textColor = isShowingIntervalPicker ? tintColor : Constant.detailTextColor
+                cell?.detailTextLabel?.textColor = isShowingIntervalPicker ? tintColor : detailTextColor
             }
 
             return cell!
         } else {
 
 			let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
-			cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+				cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+			}else{
+				cell.backgroundColor = UIColor.black.withAlphaComponent(0.04)
+			}
 
 			cell.accessoryType = .none
 			cell.titleLabel.text = Constant.weekdaySymbols()[indexPath.row]
@@ -407,30 +445,41 @@ extension CustomRecurrenceViewController {
 
 		let font = CMViewUtilities.shared().regularFont(14)
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
-		textAttributes[NSForegroundColorAttributeName] = UIColor.white
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			textAttributes[NSForegroundColorAttributeName] = UIColor.white
+		}else {
+			textAttributes[NSForegroundColorAttributeName] = UIColor.black
+		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: textAttributes), for: .normal)
 		doneButton.translatesAutoresizingMaskIntoConstraints = false
 		// for highlight state
 		let highlightFont = CMViewUtilities.shared().regularFont(14)
 		var highlightTextAttributes = [NSFontAttributeName: highlightFont, NSKernAttributeName: 1.0] as [String : Any]
-		highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
+		}else {
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
+		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: highlightTextAttributes), for: .highlighted)
 		self.navigationController?.view.addSubview(doneButton)
 
-		let leadingConstraint = NSLayoutConstraint(item: doneButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .leading, multiplier: 1, constant: 0)
-		let trailingConstraint = NSLayoutConstraint(item: doneButton, attribute: .trailing, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .trailing, multiplier: 1, constant: 0)
-		let bottomConstraint = NSLayoutConstraint(item: doneButton, attribute: .bottom, relatedBy: .equal, toItem: self.navigationController?.view, attribute: .bottom, multiplier: 1, constant: 0)
+		let leadingConstraint = NSLayoutConstraint(item: doneButton, attribute: .leading, relatedBy: .equal, toItem: self.tableView, attribute: .leading, multiplier: 1, constant: 0)
+		let trailingConstraint = NSLayoutConstraint(item: doneButton, attribute: .trailing, relatedBy: .equal, toItem: self.tableView, attribute: .trailing, multiplier: 1, constant: 0)
+		let bottomConstraint = NSLayoutConstraint(item: doneButton, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
 		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 60)
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
 
-		let blur = UIVisualEffectView(effect: UIBlurEffect(style:
+		var blur = UIVisualEffectView(effect: UIBlurEffect(style:
 			UIBlurEffectStyle.dark))
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			blur = UIVisualEffectView(effect: UIBlurEffect(style:
+				UIBlurEffectStyle.light))
+		}
 		blur.frame = doneButton.bounds
 		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-		blur.alpha = 0.7
+		blur.alpha = 0.5
 		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
 		doneButton.insertSubview(blur, at: 0)
 
 		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
@@ -535,4 +584,20 @@ extension CustomRecurrenceViewController {
                 }
         }
     }
+
+	public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+
+
+		let touchPoint = touch.location(in: self.navigationController!.view)
+
+		if (self.tableView.frame.contains(touchPoint)) {
+			return false
+		}
+		return false
+	}
+
+	public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+		return true
+	}
+
 }

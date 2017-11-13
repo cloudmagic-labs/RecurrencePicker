@@ -96,7 +96,12 @@ extension PickerViewCell: UIPickerViewDataSource, UIPickerViewDelegate {
 			pickerLabel = UILabel()
 
 			pickerLabel?.font = CMViewUtilities.shared().lightFont(20)
-			pickerLabel?.textColor = .white
+			if  NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+				pickerLabel?.textColor = .white
+			}else{
+				pickerLabel?.textColor = .black
+			}
+
 			pickerLabel?.textAlignment = .center
 		}
 

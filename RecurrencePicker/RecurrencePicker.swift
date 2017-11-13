@@ -187,7 +187,11 @@ extension RecurrencePicker {
     open override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
 		let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
-		cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
+		}else {
+			cell.backgroundColor = UIColor.black.withAlphaComponent(0.04)
+		}
 
 		cell.accessoryType = .none
 
@@ -449,12 +453,12 @@ extension RecurrencePicker: CustomRecurrenceViewControllerDelegate, UINavigation
 	public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
 
 
-		let touchPoint = touch.location(in: self.view)
+		let touchPoint = touch.location(in: self.navigationController!.view)
 
 		if (self.tableView.frame.contains(touchPoint)) {
 			return false
 		}
-		return true
+		return false
 	}
 
 	public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {

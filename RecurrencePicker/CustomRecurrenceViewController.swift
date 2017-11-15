@@ -52,7 +52,7 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 		self.tableView.backgroundColor = .clear
 		self.navigationController?.isNavigationBarHidden = true
 		self.navigationController!.delegate = self;
-		self.tableView.separatorStyle = .none
+		self.tableView.separatorStyle = .singleLine
 		self.setUpBackButton()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
@@ -240,7 +240,7 @@ extension CustomRecurrenceViewController {
 	override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat
 	{
 		if section == 0 {
-			return 60
+			return 110
 		}
 		return 0
 	}
@@ -274,6 +274,19 @@ extension CustomRecurrenceViewController {
 		footer.textLabel?.font = CMViewUtilities.shared().lightFont(13)
 		footer.textLabel?.text = "\n" + recurrenceRule.toText(occurrenceDate: occurrenceDate)!
 	}
+    
+
+    override func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
+        let cell  = tableView.cellForRow(at: indexPath)
+        cell!.contentView.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+
+    }
+    
+    override func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath) {
+        let cell  = tableView.cellForRow(at: indexPath)
+        cell!.contentView.backgroundColor = .clear
+    }
+    
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if isPickerViewCell(at: indexPath) {
@@ -307,6 +320,13 @@ extension CustomRecurrenceViewController {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: CellID.customRecurrenceViewCell)
             }
             cell?.accessoryType = .none
+            cell?.selectionStyle = .none
+            
+            let backgroundView = UIView()
+            backgroundView.backgroundColor = UIColor.red
+            cell?.selectedBackgroundView = backgroundView
+
+            
 			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 				cell?.backgroundColor = UIColor.white.withAlphaComponent(0.04)
 				cell!.textLabel!.textColor = UIColor.white.withAlphaComponent(0.8)
@@ -334,6 +354,8 @@ extension CustomRecurrenceViewController {
                 cell?.textLabel?.text = LocalizedString("CustomRecurrenceViewController.textLabel.interval")
                 cell?.detailTextLabel?.text = unitStringForIntervalCell()
                 cell?.detailTextLabel?.textColor = isShowingIntervalPicker ? tintColor : detailTextColor
+                cell?.selectionStyle = .none
+
             }
 
             return cell!
@@ -371,6 +393,7 @@ extension CustomRecurrenceViewController {
 
         let cell = tableView.cellForRow(at: indexPath)
         if indexPath.section == 0 {
+            
             if indexPath.row == 0 {
                 if isShowingFrequencyPicker {
                     tableView.beginUpdates()
@@ -447,7 +470,7 @@ extension CustomRecurrenceViewController {
 		let leadingConstraint = NSLayoutConstraint(item: backButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .leading, multiplier: 1, constant: 0)
 		let topConstraint = NSLayoutConstraint(item: backButton, attribute: .top, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .top, multiplier: 1, constant: 0)
 		let width = NSLayoutConstraint(item: backButton, attribute: .width, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 55)
-		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 50)
+		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 100)
 		self.navigationController?.view.addSubview(backButton)
 		self.navigationController!.view.addConstraints([leadingConstraint, topConstraint, width, height])
 	}
@@ -462,7 +485,9 @@ extension CustomRecurrenceViewController {
 //        if let separatorColor = separatorColor {
 //            tableView.separatorColor = separatorColor
 //        }
-
+        
+        tableView.separatorColor = UIColor.white.withAlphaComponent(0.08)
+        
 		NTCNotifyMeTableViewCell.registerCellForTableView(self.tableView)
 
 		let doneButton = UIButton(type: .custom)
@@ -501,11 +526,11 @@ extension CustomRecurrenceViewController {
 			UIBlurEffectStyle.dark))
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			blur = UIVisualEffectView(effect: UIBlurEffect(style:
-				UIBlurEffectStyle.light))
+				UIBlurEffectStyle.dark))
 		}
 		blur.frame = doneButton.bounds
 		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-		blur.alpha = 0.5
+		blur.alpha = 0.8
 		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		doneButton.insertSubview(blur, at: 0)
 

@@ -50,7 +50,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		NTCNotifyMeTableViewCell.registerCellForTableView(self.tableView)
 
 		tableView.separatorStyle = .none
-
+        
 		self.backgroundColor = .clear
 		self.view.backgroundColor = .clear
 		self.tableView.backgroundColor = .clear
@@ -135,13 +135,13 @@ extension RecurrencePicker {
 
 	open override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
 		if section == 0 {
-			return 121
+			return 160
 		}
 		return 20
 	}
 
 	open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 121))
+		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 171))
 		if section != 0 {
 			headerView.frame = CGRect.zero
 			return headerView
@@ -158,13 +158,14 @@ extension RecurrencePicker {
 			label.textColor = UIColor.black.withAlphaComponent(0.8)
 		}
 		label.text = "Repeat"
+        label.textAlignment = .left
 
-		var hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-26-[label]-26-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+		var hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-36-[label]-36-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-			hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-36-[label]-36-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+			hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-21-[label]-21-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
 		}
 
-		let vConstraint = NSLayoutConstraint.constraints(withVisualFormat: "V:|-58-[label]-10-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+		let vConstraint = NSLayoutConstraint.constraints(withVisualFormat: "V:|-68-[label]-0-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
 
 		NSLayoutConstraint.activate(hConstraint)
 		NSLayoutConstraint.activate(vConstraint)
@@ -202,6 +203,7 @@ extension RecurrencePicker {
 		}
 
 		cell.accessoryType = .none
+        cell.selectionStyle = .none
 
 		if indexPath.section == 0 {
 			cell.titleLabel.text = Constant.basicRecurrenceStrings()[indexPath.row]
@@ -264,10 +266,6 @@ extension RecurrencePicker {
 			navController.modalPresentationStyle = .overCurrentContext
 			navController.isNavigationBarHidden = false
 			self.navigationController!.present(navController, animated: false, completion: nil)
-
-
-
-//            navigationController?.pushViewController(customRecurrenceViewController, animated: true)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -313,11 +311,11 @@ extension RecurrencePicker {
 			UIBlurEffectStyle.dark))
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			blur = UIVisualEffectView(effect: UIBlurEffect(style:
-				UIBlurEffectStyle.light))
+				UIBlurEffectStyle.dark))
 		}
 		blur.frame = doneButton.bounds
 		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-		blur.alpha = 0.5
+		blur.alpha = 0.8
 		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 		doneButton.insertSubview(blur, at: 0)
 
@@ -335,7 +333,7 @@ extension RecurrencePicker {
 		let leadingConstraint = NSLayoutConstraint(item: backButton, attribute: .leading, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .leading, multiplier: 1, constant: 0)
 		let topConstraint = NSLayoutConstraint(item: backButton, attribute: .top, relatedBy: .equal, toItem: self.navigationController!.view, attribute: .top, multiplier: 1, constant: 0)
 		let width = NSLayoutConstraint(item: backButton, attribute: .width, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 55)
-		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 50)
+		let height = NSLayoutConstraint(item: backButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 100)
 		self.navigationController?.view.addSubview(backButton)
 		self.navigationController!.view.addConstraints([leadingConstraint, topConstraint, width, height])
 	}

@@ -285,7 +285,10 @@ extension RecurrencePicker {
         doneButton.translatesAutoresizingMaskIntoConstraints = false
 		doneButton.addTarget(self, action: #selector(RecurrencePicker.doneButtonTapped), for: .touchUpInside)
 
-		var font = CMViewUtilities.shared().regularFont(14)
+        var font = CMViewUtilities.shared().regularFont(16)
+        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+            font = CMViewUtilities.shared().regularFont(14)
+        }
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			textAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)

@@ -59,11 +59,12 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		self.setUpBackButton()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
-			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
 			let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
+            self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
 			tapGesture.cancelsTouchesInView = false
 			self.navigationController!.view.addGestureRecognizer(tapGesture)
 			tapGesture.delegate = self
+            self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 80, right: 0)
 		}
     }
 
@@ -92,18 +93,18 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 				self.navigationController?.view.addBackgroundGradientOnView()
 			})
 			commonInit()
-
+            
 		}
 	}
 
 	open override func viewWillLayoutSubviews() {
 		super.viewWillLayoutSubviews()
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
-			self.backButton.isHidden = true
-		}else{
-			self.backButton.isHidden = false
-		}
+        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+            self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
+            self.backButton.isHidden = true
+        }else{
+            self.backButton.isHidden = false
+        }
 	}
 
     open override func didMove(toParentViewController parent: UIViewController?) {
@@ -112,7 +113,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
             recurrencePickerDidPickRecurrence()
         }
     }
-
+    
     // MARK: - Actions
     @objc func doneButtonTapped() {
 		self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
@@ -135,13 +136,13 @@ extension RecurrencePicker {
 
 	open override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
 		if section == 0 {
-			return 160
+			return 121
 		}
 		return 20
 	}
 
 	open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 171))
+		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 121))
 		if section != 0 {
 			headerView.frame = CGRect.zero
 			return headerView
@@ -160,7 +161,7 @@ extension RecurrencePicker {
 		label.text = "Repeat"
         label.textAlignment = .left
 
-		var hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-36-[label]-36-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
+		var hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-35-[label]-35-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			hConstraint = NSLayoutConstraint.constraints(withVisualFormat: "H:|-21-[label]-21-|", options: NSLayoutFormatOptions(), metrics: nil, views: ["label":label]);
 		}
@@ -186,7 +187,10 @@ extension RecurrencePicker {
     }
 
     open override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return Constant.defaultRowHeight
+        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+            return Constant.defaultRowHeight
+        }
+        return 70
     }
 
     open override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
@@ -199,7 +203,7 @@ extension RecurrencePicker {
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
 		}else {
-			cell.backgroundColor = UIColor.black.withAlphaComponent(0.04)
+			cell.backgroundColor = UIColor(red: 216/255.0, green: 216/255.0, blue: 216/255.0, alpha: 0.2)
 		}
 
 		cell.accessoryType = .none
@@ -278,24 +282,31 @@ extension RecurrencePicker {
 
 		let doneButton = UIButton(type: .custom)
 		doneButton.backgroundColor = .clear
+        doneButton.translatesAutoresizingMaskIntoConstraints = false
 		doneButton.addTarget(self, action: #selector(RecurrencePicker.doneButtonTapped), for: .touchUpInside)
 
-		let font = CMViewUtilities.shared().regularFont(14)
+		var font = CMViewUtilities.shared().regularFont(14)
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-			textAttributes[NSForegroundColorAttributeName] = UIColor.white
+			textAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
 		}else {
-			textAttributes[NSForegroundColorAttributeName] = UIColor.black
+			textAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
+            font = CMViewUtilities.shared().regularFont(16)
 		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: textAttributes), for: .normal)
-		doneButton.translatesAutoresizingMaskIntoConstraints = false
+		
+        
 		// for highlight state
-		let highlightFont = CMViewUtilities.shared().regularFont(14)
+		var highlightFont = CMViewUtilities.shared().regularFont(14)
+        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+            highlightFont = CMViewUtilities.shared().regularFont(16)
+        }
+        
 		var highlightTextAttributes = [NSFontAttributeName: highlightFont, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.6)
 		}else {
-			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.6)
 		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: highlightTextAttributes), for: .highlighted)
 		self.navigationController?.view.addSubview(doneButton)
@@ -303,23 +314,26 @@ extension RecurrencePicker {
 		let leadingConstraint = NSLayoutConstraint(item: doneButton, attribute: .leading, relatedBy: .equal, toItem: self.tableView, attribute: .leading, multiplier: 1, constant: 0)
 		let trailingConstraint = NSLayoutConstraint(item: doneButton, attribute: .trailing, relatedBy: .equal, toItem: self.tableView, attribute: .trailing, multiplier: 1, constant: 0)
 		let bottomConstraint = NSLayoutConstraint(item: doneButton, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
-		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 60)
+		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 70)
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
 
-		var blur = UIVisualEffectView(effect: UIBlurEffect(style:
-			UIBlurEffectStyle.dark))
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			blur = UIVisualEffectView(effect: UIBlurEffect(style:
-				UIBlurEffectStyle.dark))
-		}
-		blur.frame = doneButton.bounds
-		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-		blur.alpha = 0.8
-		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-		doneButton.insertSubview(blur, at: 0)
+        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+            var blur = UIVisualEffectView(effect: UIBlurEffect(style:
+                UIBlurEffectStyle.dark))
+            if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+                blur = UIVisualEffectView(effect: UIBlurEffect(style:
+                    UIBlurEffectStyle.dark))
+            }
+            blur.frame = doneButton.bounds
+            blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
+            blur.alpha = 0.8
+            blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            doneButton.insertSubview(blur, at: 0)
+        }else {
+            doneButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+        }
 
-		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
         updateSelectedIndexPath(withRule: recurrenceRule)
     }
 

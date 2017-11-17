@@ -93,6 +93,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 				self.navigationController?.view.addBackgroundGradientOnView()
 			})
 			commonInit()
+            self.tableView.reloadData()
             
 		}
 	}

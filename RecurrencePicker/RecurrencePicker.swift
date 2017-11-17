@@ -265,11 +265,12 @@ extension RecurrencePicker {
             }
             customRecurrenceViewController.recurrenceRule = rule
 
-
-			let navController = UINavigationController(rootViewController: customRecurrenceViewController)
-			navController.modalPresentationStyle = .overCurrentContext
-			navController.isNavigationBarHidden = false
-			self.navigationController!.present(navController, animated: false, completion: nil)
+            runInMainQueue {
+                let navController = UINavigationController(rootViewController: customRecurrenceViewController)
+                navController.modalPresentationStyle = .overCurrentContext
+                navController.isNavigationBarHidden = false
+                self.navigationController!.present(navController, animated: false, completion: nil)
+            }
         }
 
         tableView.deselectRow(at: indexPath, animated: true)

@@ -57,6 +57,8 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		self.navigationController?.isNavigationBarHidden = true
 		self.navigationController!.delegate = self;
 		self.setUpBackButton()
+        self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
 			let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
@@ -64,7 +66,6 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 			tapGesture.cancelsTouchesInView = false
 			self.navigationController!.view.addGestureRecognizer(tapGesture)
 			tapGesture.delegate = self
-            self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 80, right: 0)
 		}
     }
 
@@ -414,9 +415,9 @@ extension RecurrencePicker {
 
     fileprivate func updateRecurrenceRuleText() {
         let footerView = tableView.footerView(forSection: 1)
-
         tableView.beginUpdates()
         footerView?.textLabel?.text = recurrenceRuleText()
+        
         tableView.endUpdates()
         footerView?.setNeedsLayout()
     }

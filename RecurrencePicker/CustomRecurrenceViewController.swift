@@ -54,6 +54,12 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 		self.navigationController!.delegate = self;
 		self.tableView.separatorStyle = .singleLine
 		self.setUpBackButton()
+        
+        let bundle = Bundle(identifier: "Teambition.RecurrencePicker") ?? Bundle.main
+        tableView.register(UINib(nibName: "PickerViewCell", bundle: bundle), forCellReuseIdentifier: CellID.pickerViewCell)
+        tableView.register(UINib(nibName: "MonthOrDaySelectorCell", bundle: bundle), forCellReuseIdentifier: CellID.monthOrDaySelectorCell)
+
+        
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
 			self.tableView.layer.cornerRadius = 10.0
 			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
@@ -476,15 +482,6 @@ extension CustomRecurrenceViewController {
 	}
 	
     fileprivate func commonInit() {
-//        navigationItem.title = LocalizedString("RecurrencePicker.textLabel.custom")
-//        navigationController?.navigationBar.tintColor = tintColor
-//        tableView.tintColor = tintColor
-//        if let backgroundColor = backgroundColor {
-//            tableView.backgroundColor = backgroundColor
-//        }
-//        if let separatorColor = separatorColor {
-//            tableView.separatorColor = separatorColor
-//        }
         
         tableView.separatorColor = UIColor.white.withAlphaComponent(0.08)
         
@@ -535,10 +532,6 @@ extension CustomRecurrenceViewController {
 		doneButton.insertSubview(blur, at: 0)
 
 		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
-
-        let bundle = Bundle(identifier: "Teambition.RecurrencePicker") ?? Bundle.main
-        tableView.register(UINib(nibName: "PickerViewCell", bundle: bundle), forCellReuseIdentifier: CellID.pickerViewCell)
-        tableView.register(UINib(nibName: "MonthOrDaySelectorCell", bundle: bundle), forCellReuseIdentifier: CellID.monthOrDaySelectorCell)
     }
 }
 

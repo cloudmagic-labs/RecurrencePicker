@@ -318,7 +318,7 @@ extension RecurrencePicker {
 		let leadingConstraint = NSLayoutConstraint(item: doneButton, attribute: .leading, relatedBy: .equal, toItem: self.tableView, attribute: .leading, multiplier: 1, constant: 0)
 		let trailingConstraint = NSLayoutConstraint(item: doneButton, attribute: .trailing, relatedBy: .equal, toItem: self.tableView, attribute: .trailing, multiplier: 1, constant: 0)
 		let bottomConstraint = NSLayoutConstraint(item: doneButton, attribute: .bottom, relatedBy: .equal, toItem: self.tableView, attribute: .bottom, multiplier: 1, constant: 0)
-		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 70)
+		let height = NSLayoutConstraint(item: doneButton, attribute: .height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1.0, constant: 60)
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
 

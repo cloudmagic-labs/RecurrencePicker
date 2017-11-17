@@ -31,6 +31,7 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 	open var viewDidAppear = false
 	open var interactionController: UIPercentDrivenInteractiveTransition?
 	let backButton = UIButton(type: .custom)
+	let doneButton = UIButton(type: .custom)
 
     fileprivate var isShowingFrequencyPicker: Bool {
         return isShowingPickerView && pickerViewStyle == .frequency
@@ -58,26 +59,9 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
         let bundle = Bundle(identifier: "Teambition.RecurrencePicker") ?? Bundle.main
         tableView.register(UINib(nibName: "PickerViewCell", bundle: bundle), forCellReuseIdentifier: CellID.pickerViewCell)
         tableView.register(UINib(nibName: "MonthOrDaySelectorCell", bundle: bundle), forCellReuseIdentifier: CellID.monthOrDaySelectorCell)
-
-        
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.tableView.layer.cornerRadius = 10.0
-			self.tableView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
-			let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
-			tapGesture.cancelsTouchesInView = false
-			self.navigationController!.view.addGestureRecognizer(tapGesture)
-			tapGesture.delegate = self
-		}
-
+		NTCTwoLAbelHorizonatalTableViewCell.registerCellForTableView(self.tableView, identifier: "NTCTwoLAbelHorizonatalTableViewCell")
+		NTCNotifyMeTableViewCell.registerCellForTableView(self.tableView)
     }
-
-	func tapBlurButton(_ sender: UITapGestureRecognizer) {
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
-				self.dismiss(animated: false, completion: nil)
-			}
-		}
-	}
 
 	override func viewDidAppear(_ animated: Bool)
 	{
@@ -96,17 +80,31 @@ internal class CustomRecurrenceViewController: UITableViewController, UINavigati
 				self.navigationController?.view.addBackgroundGradientOnView()
 			})
 			commonInit()
+			setUIForOrientation()
 		}
 	}
 
 	open override func viewWillLayoutSubviews() {
 		super.viewWillLayoutSubviews()
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
 			self.backButton.isHidden = true
 		}else{
 			self.backButton.isHidden = false
 		}
+	}
+
+	final func setUIForOrientation()
+	{
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			// iPhone
+			self.tableView.backgroundColor = UIColor.clear
+			self.tableView.layer.cornerRadius = 0.0
+		}else {
+			self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
+			self.tableView.layer.cornerRadius = 10.0
+		}
+		self.setupDoneButton()
+		self.tableView.reloadData()
 	}
 
 	@objc func doneButtonTapped() {
@@ -186,24 +184,32 @@ extension CustomRecurrenceViewController {
         return String(recurrenceRule.interval) + " " + Constant.pluralUnitStrings()[recurrenceRule.frequency.number]
     }
 
-    fileprivate func updateDetailTextColor() {
-//        frequencyCell?.detailTextLabel?.textColor = isShowingFrequencyPicker ? tintColor : Constant.detailTextColor
-//        intervalCell?.detailTextLabel?.textColor = isShowingIntervalPicker ? tintColor : Constant.detailTextColor
-    }
-
     fileprivate func updateFrequencyCellText() {
-        frequencyCell?.detailTextLabel?.text = Constant.frequencyStrings()[recurrenceRule.frequency.number]
+		if self.frequencyCell != nil && self.frequencyCell!.isKind(of: NTCTwoLAbelHorizonatalTableViewCell.self) {
+			(self.frequencyCell as! NTCTwoLAbelHorizonatalTableViewCell).label2.text = Constant.frequencyStrings()[recurrenceRule.frequency.number]
+		}
     }
 
     fileprivate func updateIntervalCellText() {
-        intervalCell?.detailTextLabel?.text = unitStringForIntervalCell()
+		if self.intervalCell != nil && self.intervalCell!.isKind(of: NTCTwoLAbelHorizonatalTableViewCell.self) {
+			(self.intervalCell as! NTCTwoLAbelHorizonatalTableViewCell).label2.text = unitStringForIntervalCell()
+		}
     }
 
     fileprivate func updateRecurrenceRuleText() {
         let footerView = tableView.footerView(forSection: 0)
 
         tableView.beginUpdates()
-		footerView?.textLabel?.text = "\n" + recurrenceRule.toText(occurrenceDate: occurrenceDate)!
+		if let ruleText = recurrenceRule.toText(occurrenceDate: occurrenceDate) {
+			footerView?.textLabel?.text = "\n" + ruleText
+		}else {
+			footerView?.textLabel?.text = ""
+		}
+		if footerView != nil {
+			var frameOfFooter = footerView!.bounds
+			frameOfFooter.origin.x  = NTCLayoutDetector().currentLayout().shouldUseIphoneUI ? -5 : -20
+			footerView!.bounds = frameOfFooter
+		}
         tableView.endUpdates()
         footerView?.setNeedsLayout()
     }
@@ -243,16 +249,15 @@ extension CustomRecurrenceViewController {
     }
 
 
-	override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat
-	{
+	open override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
 		if section == 0 {
-			return 110
+			return 121
 		}
 		return 0
 	}
 
 	 override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 60))
+		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 121))
 		if section != 0 {
 			headerView.frame = CGRect.zero
 			return headerView
@@ -261,24 +266,37 @@ extension CustomRecurrenceViewController {
 		return headerView;
 	}
 
-    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        if section == 0 {
-			return "\n" +  recurrenceRule.toText(occurrenceDate: occurrenceDate)!
-        }
-        return nil
-    }
+	override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+		if section == 0 {
+			if let ruleText = recurrenceRule.toText(occurrenceDate: occurrenceDate) {
+				return "\n" + ruleText
+			}else {
+				return nil
+			}
+		}
+		return nil
+	}
 
 	override func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int)
 	{
 		let footer : UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
+			footer.textLabel?.font = CMViewUtilities.shared().regularFont(13)
 		}else {
 			footer.textLabel?.textColor = UIColor.black.withAlphaComponent(0.8)
+			footer.textLabel?.font = CMViewUtilities.shared().regularFont(15)
 		}
+		// patch for origin -x
+		var frameOfFooter = footer.bounds
+		frameOfFooter.origin.x  = NTCLayoutDetector().currentLayout().shouldUseIphoneUI ? -5 : -20
+		footer.bounds = frameOfFooter
 
-		footer.textLabel?.font = CMViewUtilities.shared().lightFont(13)
-		footer.textLabel?.text = "\n" + recurrenceRule.toText(occurrenceDate: occurrenceDate)!
+		if let ruleText = recurrenceRule.toText(occurrenceDate: occurrenceDate) {
+			footer.textLabel?.text = "\n" + ruleText + "\n"
+		}else {
+			footer.textLabel?.text = ""
+		}
 	}
     
 
@@ -321,50 +339,27 @@ extension CustomRecurrenceViewController {
 
             return cell
         } else if indexPath.section == 0 {
-            var cell = tableView.dequeueReusableCell(withIdentifier: CellID.customRecurrenceViewCell)
-            if cell == nil {
-                cell = UITableViewCell(style: .value1, reuseIdentifier: CellID.customRecurrenceViewCell)
-            }
-            cell?.accessoryType = .none
-            cell?.selectionStyle = .none
-            
-            let backgroundView = UIView()
-            backgroundView.backgroundColor = UIColor.red
-            cell?.selectedBackgroundView = backgroundView
 
-            
+			let cell = NTCTwoLAbelHorizonatalTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
 			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-				cell?.backgroundColor = UIColor.white.withAlphaComponent(0.04)
-				cell!.textLabel!.textColor = UIColor.white.withAlphaComponent(0.8)
+				cell.backgroundColor = UIColor.white.withAlphaComponent(0.04)
 			}else{
-				cell?.backgroundColor = UIColor.black.withAlphaComponent(0.04)
-				cell!.textLabel!.textColor = UIColor.black.withAlphaComponent(0.8)
+				cell.backgroundColor = UIColor.black.withAlphaComponent(0.04)
 			}
 
-			cell!.textLabel!.font = CMViewUtilities.shared().regularFont(16)
-			cell!.detailTextLabel!.font = CMViewUtilities.shared().regularFont(15)
-
-			var detailTextColor = UIColor.black
-
-			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-				detailTextColor = UIColor.white
-			}
-
+			cell.accessoryType = .none
+			cell.selectionStyle = .none
 
             if indexPath.row == 0 {
-                cell?.textLabel?.text = LocalizedString("CustomRecurrenceViewController.textLabel.frequency")
-                cell?.detailTextLabel?.text = Constant.frequencyStrings()[recurrenceRule.frequency.number]
-
-                cell?.detailTextLabel?.textColor = isShowingFrequencyPicker ? tintColor : detailTextColor
+                cell.label1.text = LocalizedString("CustomRecurrenceViewController.textLabel.frequency")
+                cell.label2.text = Constant.frequencyStrings()[recurrenceRule.frequency.number]
             } else {
-                cell?.textLabel?.text = LocalizedString("CustomRecurrenceViewController.textLabel.interval")
-                cell?.detailTextLabel?.text = unitStringForIntervalCell()
-                cell?.detailTextLabel?.textColor = isShowingIntervalPicker ? tintColor : detailTextColor
-                cell?.selectionStyle = .none
-
+                cell.label1.text = LocalizedString("CustomRecurrenceViewController.textLabel.interval")
+                cell.label2.text = unitStringForIntervalCell()
             }
-
-            return cell!
+			cell.label1.backgroundColor = UIColor.clear
+			cell.label2.backgroundColor = UIColor.clear
+            return cell
         } else {
 
 			let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
@@ -416,7 +411,6 @@ extension CustomRecurrenceViewController {
                     unfoldPickerView()
                     tableView.endUpdates()
                 }
-                updateDetailTextColor()
             } else {
                 if isShowingIntervalPicker {
                     tableView.beginUpdates()
@@ -433,7 +427,6 @@ extension CustomRecurrenceViewController {
                     unfoldPickerView()
                     tableView.endUpdates()
                 }
-                updateDetailTextColor()
             }
         } else if indexPath.section == 1 {
             if isShowingPickerView {
@@ -441,7 +434,6 @@ extension CustomRecurrenceViewController {
                 isShowingPickerView = false
                 foldPickerView()
                 tableView.endUpdates()
-                updateDetailTextColor()
             }
 
             let weekday = Constant.weekdays[indexPath.row]
@@ -484,30 +476,40 @@ extension CustomRecurrenceViewController {
     fileprivate func commonInit() {
         
         tableView.separatorColor = UIColor.white.withAlphaComponent(0.08)
-        
-		NTCNotifyMeTableViewCell.registerCellForTableView(self.tableView)
 
-		let doneButton = UIButton(type: .custom)
+		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+    }
+
+	final func setupDoneButton() {
 		doneButton.backgroundColor = .clear
+		doneButton.translatesAutoresizingMaskIntoConstraints = false
 		doneButton.addTarget(self, action: #selector(CustomRecurrenceViewController.doneButtonTapped), for: .touchUpInside)
 
-
-		let font = CMViewUtilities.shared().regularFont(14)
+		var font = CMViewUtilities.shared().regularFont(16)
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			font = CMViewUtilities.shared().regularFont(14)
+		}
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-			textAttributes[NSForegroundColorAttributeName] = UIColor.white
+			textAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
 		}else {
-			textAttributes[NSForegroundColorAttributeName] = UIColor.black
+			textAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
+			font = CMViewUtilities.shared().regularFont(16)
 		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: textAttributes), for: .normal)
-		doneButton.translatesAutoresizingMaskIntoConstraints = false
+
+
 		// for highlight state
-		let highlightFont = CMViewUtilities.shared().regularFont(14)
+		var highlightFont = CMViewUtilities.shared().regularFont(14)
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			highlightFont = CMViewUtilities.shared().regularFont(16)
+		}
+
 		var highlightTextAttributes = [NSFontAttributeName: highlightFont, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.6)
 		}else {
-			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
+			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.6)
 		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: highlightTextAttributes), for: .highlighted)
 		self.navigationController?.view.addSubview(doneButton)
@@ -519,20 +521,23 @@ extension CustomRecurrenceViewController {
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
 
-		var blur = UIVisualEffectView(effect: UIBlurEffect(style:
-			UIBlurEffectStyle.dark))
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			blur = UIVisualEffectView(effect: UIBlurEffect(style:
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			var blur = UIVisualEffectView(effect: UIBlurEffect(style:
 				UIBlurEffectStyle.dark))
+			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+				blur = UIVisualEffectView(effect: UIBlurEffect(style:
+					UIBlurEffectStyle.dark))
+			}
+			blur.frame = doneButton.bounds
+			blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
+			blur.alpha = 0.8
+			blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+			doneButton.insertSubview(blur, at: 0)
+		}else {
+			doneButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
 		}
-		blur.frame = doneButton.bounds
-		blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-		blur.alpha = 0.8
-		blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-		doneButton.insertSubview(blur, at: 0)
+	}
 
-		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
-    }
 }
 
 extension CustomRecurrenceViewController: PickerViewCellDelegate {
@@ -560,7 +565,6 @@ extension CustomRecurrenceViewController: MonthOrDaySelectorCellDelegate {
             isShowingPickerView = false
             foldPickerView()
             tableView.endUpdates()
-            updateDetailTextColor()
         }
         recurrenceRule.bymonthday.append(monthday)
         updateRecurrenceRuleText()
@@ -572,7 +576,6 @@ extension CustomRecurrenceViewController: MonthOrDaySelectorCellDelegate {
             isShowingPickerView = false
             foldPickerView()
             tableView.endUpdates()
-            updateDetailTextColor()
         }
         if let index = recurrenceRule.bymonthday.index(of: monthday) {
             recurrenceRule.bymonthday.remove(at: index)
@@ -590,7 +593,6 @@ extension CustomRecurrenceViewController: MonthOrDaySelectorCellDelegate {
             isShowingPickerView = false
             foldPickerView()
             tableView.endUpdates()
-            updateDetailTextColor()
         }
         recurrenceRule.bymonth.append(month)
         updateRecurrenceRuleText()
@@ -602,7 +604,6 @@ extension CustomRecurrenceViewController: MonthOrDaySelectorCellDelegate {
             isShowingPickerView = false
             foldPickerView()
             tableView.endUpdates()
-            updateDetailTextColor()
         }
         if let index = recurrenceRule.bymonth.index(of: month) {
             recurrenceRule.bymonth.remove(at: index)
@@ -619,7 +620,7 @@ extension CustomRecurrenceViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: { (_) in
-
+			self.setUIForOrientation()
             }) { (_) in
                 let frequency = self.recurrenceRule.frequency
                 if frequency == .monthly || frequency == .yearly {

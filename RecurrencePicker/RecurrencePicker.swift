@@ -10,7 +10,7 @@ import UIKit
 import EventKit
 //import RRuleSwift
 
-open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate {
+open class RecurrencePicker: UITableViewController {
     open var language: RecurrencePickerLanguage = .english {
         didSet {
             InternationalControl.shared.language = language
@@ -27,6 +27,7 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 	open var viewDidAppear = false
 	open var interactionController: UIPercentDrivenInteractiveTransition?
 	let backButton = UIButton(type: .custom)
+	let doneButton = UIButton(type: .custom)
 
     fileprivate var isModal: Bool {
         return presentingViewController?.presentedViewController == self
@@ -58,23 +59,29 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 		self.navigationController!.delegate = self;
 		self.setUpBackButton()
         self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
-
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.tableView.layer.cornerRadius = 10.0
-			let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
-            self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
-			tapGesture.cancelsTouchesInView = false
-			self.navigationController!.view.addGestureRecognizer(tapGesture)
-			tapGesture.delegate = self
-		}
     }
 
-	func tapBlurButton(_ sender: UITapGestureRecognizer) {
-		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-			self.view.fadeOut(duration: 0.10, alpha: 0.9) { (completed) in
-				self.dismiss(animated: false, completion: nil)
-			}
+
+	private func setUIForOrientation()
+	{
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			// iPhone
+			self.tableView.backgroundColor = UIColor.clear
+			self.tableView.layer.cornerRadius = 0.0
+		}else {
+			self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
+			self.tableView.layer.cornerRadius = 10.0
 		}
+		self.setupDoneButton()
+		self.tableView.reloadData()
+	}
+
+	override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+		super.viewWillTransition(to: size, with: coordinator)
+		coordinator.animate(alongsideTransition: nil, completion: {
+			_ in
+			self.setUIForOrientation()
+		})
 	}
 
 	open override func viewDidAppear(_ animated: Bool)
@@ -94,15 +101,13 @@ open class RecurrencePicker: UITableViewController, UIGestureRecognizerDelegate 
 				self.navigationController?.view.addBackgroundGradientOnView()
 			})
 			commonInit()
-            self.tableView.reloadData()
-            
+			setUIForOrientation()
 		}
 	}
 
 	open override func viewWillLayoutSubviews() {
 		super.viewWillLayoutSubviews()
         if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-            self.tableView.frame = CGRect(x: (self.navigationController!.view.frame.size.width - 574 )/2, y: (self.navigationController!.view.frame.size.height - 645 )/2, width: 574, height: 645)
             self.backButton.isHidden = true
         }else{
             self.backButton.isHidden = false
@@ -199,6 +204,28 @@ extension RecurrencePicker {
         return section == 1 ? recurrenceRuleText() : nil
     }
 
+	override open func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int)
+	{
+		let footer : UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
+			footer.textLabel?.font = CMViewUtilities.shared().regularFont(13)
+		}else {
+			footer.textLabel?.textColor = UIColor.black.withAlphaComponent(0.8)
+			footer.textLabel?.font = CMViewUtilities.shared().regularFont(15)
+		}
+		if let footerText = recurrenceRuleText() {
+			footer.textLabel?.text = "\n" + footerText
+		}else {
+			footer.textLabel?.text = ""
+		}
+		// patch for origin -x
+		var frameOfFooter = footer.bounds
+		frameOfFooter.origin.x  = NTCLayoutDetector().currentLayout().shouldUseIphoneUI ? -5 : -20
+		footer.bounds = frameOfFooter
+
+	}
+
     open override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
 		let cell = NTCNotifyMeTableViewCell.reusableCellForTableView(tableView, indexPath: indexPath)
@@ -268,10 +295,14 @@ extension RecurrencePicker {
             customRecurrenceViewController.recurrenceRule = rule
 
             runInMainQueue {
-                let navController = UINavigationController(rootViewController: customRecurrenceViewController)
-                navController.modalPresentationStyle = .overCurrentContext
-                navController.isNavigationBarHidden = false
-                self.navigationController!.present(navController, animated: false, completion: nil)
+
+
+				let customRecurrenceContainer = NTCRecurrencePickerViewController(tableController: customRecurrenceViewController)
+
+				let navController = UINavigationController(rootViewController: customRecurrenceContainer)
+				navController.modalPresentationStyle = .overCurrentContext
+				navController.isNavigationBarHidden = true
+				self.navigationController!.present(navController, animated: false, completion: nil)
             }
         }
 
@@ -283,31 +314,34 @@ extension RecurrencePicker {
     // MARK: - Helper
     fileprivate func commonInit() {
 
-		let doneButton = UIButton(type: .custom)
+        updateSelectedIndexPath(withRule: recurrenceRule)
+    }
+
+	final func setupDoneButton() {
 		doneButton.backgroundColor = .clear
-        doneButton.translatesAutoresizingMaskIntoConstraints = false
+		doneButton.translatesAutoresizingMaskIntoConstraints = false
 		doneButton.addTarget(self, action: #selector(RecurrencePicker.doneButtonTapped), for: .touchUpInside)
 
-        var font = CMViewUtilities.shared().regularFont(16)
-        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-            font = CMViewUtilities.shared().regularFont(14)
-        }
+		var font = CMViewUtilities.shared().regularFont(16)
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			font = CMViewUtilities.shared().regularFont(14)
+		}
 		var textAttributes = [NSFontAttributeName: font, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			textAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.8)
 		}else {
 			textAttributes[NSForegroundColorAttributeName] = UIColor.black.withAlphaComponent(0.8)
-            font = CMViewUtilities.shared().regularFont(16)
+			font = CMViewUtilities.shared().regularFont(16)
 		}
 		doneButton.setAttributedTitle(NSAttributedString(string: "DONE", attributes: textAttributes), for: .normal)
-		
-        
+
+
 		// for highlight state
 		var highlightFont = CMViewUtilities.shared().regularFont(14)
-        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-            highlightFont = CMViewUtilities.shared().regularFont(16)
-        }
-        
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+			highlightFont = CMViewUtilities.shared().regularFont(16)
+		}
+
 		var highlightTextAttributes = [NSFontAttributeName: highlightFont, NSKernAttributeName: 1.0] as [String : Any]
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			highlightTextAttributes[NSForegroundColorAttributeName] = UIColor.white.withAlphaComponent(0.6)
@@ -324,24 +358,22 @@ extension RecurrencePicker {
 
 		self.navigationController?.view.addConstraints([leadingConstraint, trailingConstraint, bottomConstraint, height])
 
-        if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
-            var blur = UIVisualEffectView(effect: UIBlurEffect(style:
-                UIBlurEffectStyle.dark))
-            if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
-                blur = UIVisualEffectView(effect: UIBlurEffect(style:
-                    UIBlurEffectStyle.dark))
-            }
-            blur.frame = doneButton.bounds
-            blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
-            blur.alpha = 0.8
-            blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            doneButton.insertSubview(blur, at: 0)
-        }else {
-            doneButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
-        }
-
-        updateSelectedIndexPath(withRule: recurrenceRule)
-    }
+		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
+			var blur = UIVisualEffectView(effect: UIBlurEffect(style:
+				UIBlurEffectStyle.dark))
+			if NTCLayoutDetector().currentLayout().shouldUseIphoneUI == false {
+				blur = UIVisualEffectView(effect: UIBlurEffect(style:
+					UIBlurEffectStyle.dark))
+			}
+			blur.frame = doneButton.bounds
+			blur.isUserInteractionEnabled = false //This allows touches to forward to the button.
+			blur.alpha = 0.8
+			blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+			doneButton.insertSubview(blur, at: 0)
+		}else {
+			doneButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+		}
+	}
 
 	fileprivate func setUpBackButton() {
 		backButton.backgroundColor = .clear
@@ -416,8 +448,16 @@ extension RecurrencePicker {
     fileprivate func updateRecurrenceRuleText() {
         let footerView = tableView.footerView(forSection: 1)
         tableView.beginUpdates()
-        footerView?.textLabel?.text = recurrenceRuleText()
-        
+		if let footerText = recurrenceRuleText() {
+			footerView?.textLabel?.text = "\n" + footerText
+		}else {
+			footerView?.textLabel?.text = ""
+		}
+		if footerView != nil {
+			var frameOfFooter = footerView!.bounds
+			frameOfFooter.origin.x  = NTCLayoutDetector().currentLayout().shouldUseIphoneUI ? -5 : -20
+			footerView!.bounds = frameOfFooter
+		}
         tableView.endUpdates()
         footerView?.setNeedsLayout()
     }
@@ -487,22 +527,4 @@ extension RecurrencePicker: CustomRecurrenceViewControllerDelegate, UINavigation
 	{
 		return self.interactionController
 	}
-
-
-
-	public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-
-
-		let touchPoint = touch.location(in: self.navigationController!.view)
-
-		if (self.tableView.frame.contains(touchPoint)) {
-			return false
-		}
-		return false
-	}
-
-	public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-		return true
-	}
-
 }

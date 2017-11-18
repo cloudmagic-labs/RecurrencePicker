@@ -55,7 +55,7 @@ open class RecurrencePicker: UITableViewController {
 	override open func viewWillDisappear(_ animated: Bool)
 	{
 		super.viewWillDisappear(animated)
-		if viewDidAppear == true {
+		if viewDidAppear == true && NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			self.tableView.isHidden = true
 		}
 	}

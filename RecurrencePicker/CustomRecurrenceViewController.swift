@@ -52,7 +52,7 @@ internal class CustomRecurrenceViewController: UITableViewController {
 		self.tableView.separatorStyle = .singleLine
 		self.tableView.separatorColor = UIColor.clear
 		self.tableView.isHidden = true
-		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+		self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
 
         let bundle = Bundle(identifier: "Teambition.RecurrencePicker") ?? Bundle.main
         tableView.register(UINib(nibName: "PickerViewCell", bundle: bundle), forCellReuseIdentifier: CellID.pickerViewCell)

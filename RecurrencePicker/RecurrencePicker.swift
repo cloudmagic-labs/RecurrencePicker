@@ -49,7 +49,7 @@ open class RecurrencePicker: UITableViewController {
 		self.view.backgroundColor = .clear
 		self.tableView.backgroundColor = .clear
 		self.navigationController?.isNavigationBarHidden = true
-        self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 60, right: 0)
+        self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
     }
 
 	override open func viewWillDisappear(_ animated: Bool)

@@ -96,7 +96,7 @@ open class RecurrencePicker: UITableViewController {
 			self.tableView.layer.cornerRadius = 0.0
 		}else {
 			self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
-			self.tableView.layer.cornerRadius = 10.0
+			self.tableView.layer.cornerRadius = 5.0
 		}
 		self.tableView.reloadData()
 		self.backgroundColor = UIColor.green
@@ -109,7 +109,6 @@ open class RecurrencePicker: UITableViewController {
 			self.setUIForOrientation()
 		})
 	}
-
 
     open override func didMove(toParentViewController parent: UIViewController?) {
         if parent == nil {

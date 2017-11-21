@@ -89,7 +89,7 @@ internal class CustomRecurrenceViewController: UITableViewController {
 			self.tableView.separatorColor = UIColor.white.withAlphaComponent(0.08)
 		}else {
 			self.tableView.backgroundColor = CMViewUtilities.shared().ipadCalFormSheetColor
-			self.tableView.layer.cornerRadius = 10.0
+			self.tableView.layer.cornerRadius = 5.0
 			self.tableView.separatorColor = UIColor.black.withAlphaComponent(0.08)
 
 		}

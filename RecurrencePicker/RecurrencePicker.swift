@@ -239,7 +239,8 @@ extension RecurrencePicker {
     }
 
     open override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		let lastSelectedCell = tableView.cellForRow(at: selectedIndexPath) as! NTCNotifyMeTableViewCell
+		let lastSelectedCell = self.tableView(self.tableView, cellForRowAt: selectedIndexPath) as! NTCNotifyMeTableViewCell
+
 		let currentSelectedCell = tableView.cellForRow(at: indexPath) as! NTCNotifyMeTableViewCell
 
         lastSelectedCell.tickIcon.isHidden = true

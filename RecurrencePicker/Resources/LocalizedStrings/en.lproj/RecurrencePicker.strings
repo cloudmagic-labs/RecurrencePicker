@@ -38,12 +38,12 @@
 "CustomRecurrenceViewController.textLabel.frequency" = "Frequency";
 "CustomRecurrenceViewController.textLabel.interval" = "Every";
 
-"RecurrenceRuleText.basicRecurrence" = "Every %@.";
+"RecurrenceRuleText.basicRecurrence" = "Every %@";
 "RecurrenceRuleText.element.on.weekly" = "on";
 "RecurrenceRuleText.element.on.monthly" = "on the";
 "RecurrenceRuleText.element.on.yearly" = "in";
 "RecurrenceRuleText.element.and" = "and";
 "RecurrenceRuleText.element.comma" = ",";
 "RecurrenceRuleText.element.day" = "";
-"RecurrenceRuleText.everyWeekday" = "Every weekday.";
-"RecurrenceRuleText.byWeekdaysOrMonthdaysOrMonths" = "Every %@ %@.";
+"RecurrenceRuleText.everyWeekday" = "Every weekday";
+"RecurrenceRuleText.byWeekdaysOrMonthdaysOrMonths" = "Every %@ %@";

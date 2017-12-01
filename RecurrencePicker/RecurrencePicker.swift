@@ -28,8 +28,8 @@ open class RecurrencePicker: UITableViewController {
 	open var interactionController: UIPercentDrivenInteractiveTransition?
 
     fileprivate var recurrenceRule: RecurrenceRule?
-    fileprivate var selectedIndexPath = IndexPath(row: 0, section: 0)
-
+	var selectedIndexPath = IndexPath(row: 0, section: 0)
+	var initialSelectedIndex = IndexPath(row: 0, section: 0)
     // MARK: - Initialization
     public convenience init(recurrenceRule: RecurrenceRule?) {
         self.init(style: .grouped)
@@ -66,6 +66,7 @@ open class RecurrencePicker: UITableViewController {
 		if viewDidAppear == false {
 			viewDidAppear = true
 			commonInit()
+			self.initialSelectedIndex = self.selectedIndexPath
 			setUIForOrientation()
 			self.fadeOut()
 		}
@@ -278,7 +279,8 @@ extension RecurrencePicker {
                 let month = occurrenceDateComponents.month
                 rule.bymonth = [month!]
             }
-            customRecurrenceViewController.recurrenceRule = rule
+			customRecurrenceViewController.recurrenceRule = rule
+			customRecurrenceViewController.initialStateRecurrenceRule = rule
 
             runInMainQueue {
 				let customRecurrenceContainer = NTCRecurrencePickerViewController(tableController: customRecurrenceViewController)
@@ -404,4 +406,14 @@ extension RecurrencePicker {
 
         delegate?.recurrencePicker(self, didPickRecurrence: recurrenceRule)
     }
+
+	final func displayAlertToDiscardOrSaveChanges()
+	{
+		let cancel = NTAlert.Action.cancel()
+		let ok = NTAlert.Action(title: "OK".localizedUppercaseString, action: {
+			self.navigationController?.popViewController(animated: false)
+		}, isDestructive: false, isCancel: false)
+		NTAlert(title: "Discard Changes?", message: "Are you sure you want to discard the changes?", actions: [cancel, ok], showAsSheet: false).show(on: self)
+	}
+
 }

@@ -19,7 +19,8 @@ internal class CustomRecurrenceViewController: UITableViewController {
     internal weak var delegate: CustomRecurrenceViewControllerDelegate?
     internal var occurrenceDate: Date!
     internal var tintColor: UIColor!
-    internal var recurrenceRule: RecurrenceRule!
+	var recurrenceRule: RecurrenceRule!
+	var initialStateRecurrenceRule: RecurrenceRule!
     internal var backgroundColor: UIColor?
     internal var separatorColor: UIColor?
     internal var supportedFrequencies = Constant.frequencies
@@ -506,6 +507,22 @@ extension CustomRecurrenceViewController: MonthOrDaySelectorCellDelegate {
     func monthOrDaySelectorCell(_ cell: MonthOrDaySelectorCell, shouldDeselectMonth month: Int) -> Bool {
         return recurrenceRule.bymonth.count > 1
     }
+
+	func checkIfDiscardAlertNeedsToBeshown() {
+		let initialrRuleString = initialStateRecurrenceRule.toRRuleString()
+		let currentrRuleString = recurrenceRule.toRRuleString()
+
+		if initialrRuleString != currentrRuleString {
+
+			let cancel = NTAlert.Action.cancel()
+			let ok = NTAlert.Action(title: "OK".localizedUppercaseString, action: {
+				self.navigationController?.popViewController(animated: false)
+			}, isDestructive: false, isCancel: false)
+			NTAlert(title: "Discard Changes?", message: "Are you sure you want to discard the changes?", actions: [cancel, ok], showAsSheet: false).show(on: self)
+		}else {
+			self.navigationController?.popViewController(animated: false)
+		}
+	}
 }
 
 extension CustomRecurrenceViewController {

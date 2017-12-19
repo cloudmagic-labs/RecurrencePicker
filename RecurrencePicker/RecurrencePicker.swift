@@ -145,7 +145,7 @@ extension RecurrencePicker {
 		headerView.addSubview(label)
 		label.backgroundColor = UIColor.clear;
 
-		label.font = CMViewUtilities.shared().lightFont(25)
+		label.font = NTCFont.systemFont(ofSize: 25, weight: .Light)
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			label.textColor = UIColor.white.withAlphaComponent(0.8)
 		}else {
@@ -195,10 +195,10 @@ extension RecurrencePicker {
 		let footer : UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
-			footer.textLabel?.font = CMViewUtilities.shared().regularFont(13)
+			footer.textLabel?.font = NTCFont.systemFont(ofSize: 13, weight: .Regular)
 		}else {
 			footer.textLabel?.textColor = UIColor.black.withAlphaComponent(0.8)
-			footer.textLabel?.font = CMViewUtilities.shared().regularFont(15)
+			footer.textLabel?.font = NTCFont.systemFont(ofSize: 15, weight: .Regular)
 		}
 		if let footerText = recurrenceRuleText() {
 			footer.textLabel?.text = "\n" + footerText

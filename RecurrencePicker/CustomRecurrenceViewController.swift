@@ -260,10 +260,10 @@ extension CustomRecurrenceViewController {
 		let footer : UITableViewHeaderFooterView = view as! UITableViewHeaderFooterView
 		if NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			footer.textLabel?.textColor = UIColor.white.withAlphaComponent(0.8)
-			footer.textLabel?.font = CMViewUtilities.shared().regularFont(13)
+			footer.textLabel?.font = NTCFont.systemFont(ofSize: 13, weight: .Regular)
 		}else {
 			footer.textLabel?.textColor = UIColor.black.withAlphaComponent(0.8)
-			footer.textLabel?.font = CMViewUtilities.shared().regularFont(15)
+			footer.textLabel?.font = NTCFont.systemFont(ofSize: 15, weight: .Regular)
 		}
 		// patch for origin -x
 		var frameOfFooter = footer.bounds

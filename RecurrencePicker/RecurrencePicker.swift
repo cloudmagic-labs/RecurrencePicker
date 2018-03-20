@@ -136,7 +136,7 @@ extension RecurrencePicker {
 
 	open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 		let headerView:UIView = UIView(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.size.width, height: 121))
-		if section != 0 {
+		if section != 0 || NTCLayoutDetector().currentLayout().shouldUseIphoneUI {
 			headerView.frame = CGRect.zero
 			return headerView
 		}

@@ -30,7 +30,8 @@ open class RecurrencePicker: UITableViewController {
     fileprivate var recurrenceRule: RecurrenceRule?
 	var selectedIndexPath = IndexPath(row: 0, section: 0)
 	var initialSelectedIndex = IndexPath(row: 0, section: 0)
-    // MARK: - Initialization
+
+	// MARK: - Initialization
     public convenience init(recurrenceRule: RecurrenceRule?) {
         self.init(style: .grouped)
         self.recurrenceRule = recurrenceRule

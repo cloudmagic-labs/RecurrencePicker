@@ -28,8 +28,8 @@ open class RecurrencePicker: UITableViewController {
 	open var interactionController: UIPercentDrivenInteractiveTransition?
 
     fileprivate var recurrenceRule: RecurrenceRule?
-	var selectedIndexPath = IndexPath(row: 0, section: 0)
-	var initialSelectedIndex = IndexPath(row: 0, section: 0)
+	var selectedIndexPath:IndexPath?
+	var initialSelectedIndex:IndexPath?
 
 	// MARK: - Initialization
     public convenience init(recurrenceRule: RecurrenceRule?) {
@@ -241,9 +241,12 @@ extension RecurrencePicker {
     }
 
     open override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		let lastSelectedCell = tableView.cellForRow(at: selectedIndexPath) as? NTCNotifyMeTableViewCell
-		if lastSelectedCell != nil {
-			lastSelectedCell!.tickIcon.isHidden = true
+		if selectedIndexPath != nil {
+			let lastSelectedCell = tableView.cellForRow(at: selectedIndexPath!) as? NTCNotifyMeTableViewCell
+			
+			if lastSelectedCell != nil {
+				lastSelectedCell!.tickIcon.isHidden = true
+			}
 		}
 
 		let currentSelectedCell = tableView.cellForRow(at: indexPath) as! NTCNotifyMeTableViewCell
@@ -310,21 +313,20 @@ extension RecurrencePicker {
 
     fileprivate func updateSelectedIndexPath(withRule recurrenceRule: RecurrenceRule?) {
         guard let recurrenceRule = recurrenceRule else {
-            selectedIndexPath = IndexPath(row: 0, section: 0)
             return
         }
         if recurrenceRule.isDailyRecurrence() {
-            selectedIndexPath = IndexPath(row: 1, section: 0)
+            selectedIndexPath = IndexPath(row: 0, section: 0)
         } else if recurrenceRule.isWeeklyRecurrence(occurrence: occurrenceDate) {
-            selectedIndexPath = IndexPath(row: 2, section: 0)
+            selectedIndexPath = IndexPath(row: 1, section: 0)
         } else if recurrenceRule.isBiWeeklyRecurrence(occurrence: occurrenceDate) {
-            selectedIndexPath = IndexPath(row: 3, section: 0)
+            selectedIndexPath = IndexPath(row: 2, section: 0)
         } else if recurrenceRule.isMonthlyRecurrence(occurrence: occurrenceDate) {
-            selectedIndexPath = IndexPath(row: 4, section: 0)
+            selectedIndexPath = IndexPath(row: 3, section: 0)
         } else if recurrenceRule.isYearlyRecurrence(occurrence: occurrenceDate) {
-            selectedIndexPath = IndexPath(row: 5, section: 0)
+            selectedIndexPath = IndexPath(row: 4, section: 0)
         } else if recurrenceRule.isWeekdayRecurrence() {
-            selectedIndexPath = IndexPath(row: 6, section: 0)
+            selectedIndexPath = IndexPath(row: 5, section: 0)
         } else {
             selectedIndexPath = IndexPath(row: 0, section: 1)
         }
@@ -337,22 +339,20 @@ extension RecurrencePicker {
 
         switch indexPath.row {
         case 0:
-            recurrenceRule = nil
-        case 1:
             recurrenceRule = RecurrenceRule.dailyRecurrence()
-        case 2:
+        case 1:
             let weekday = EKWeekday(rawValue: calendar.component(.weekday, from: occurrenceDate))!
             recurrenceRule = RecurrenceRule.weeklyRecurrence(withWeekday: weekday)
-        case 3:
+        case 2:
             let weekday = EKWeekday(rawValue: calendar.component(.weekday, from: occurrenceDate))!
             recurrenceRule = RecurrenceRule.biWeeklyRecurrence(withWeekday: weekday)
-        case 4:
+        case 3:
             let monthday = calendar.component(.day, from: occurrenceDate)
             recurrenceRule = RecurrenceRule.monthlyRecurrence(withMonthday: monthday)
-        case 5:
+        case 4:
             let month = calendar.component(.month, from: occurrenceDate)
             recurrenceRule = RecurrenceRule.yearlyRecurrence(withMonth: month)
-        case 6:
+        case 5:
             recurrenceRule = RecurrenceRule.weekdayRecurrence()
         default:
             break
@@ -360,7 +360,7 @@ extension RecurrencePicker {
     }
 
     fileprivate func recurrenceRuleText() -> String? {
-        return selectedIndexPath.section == 1 ? recurrenceRule?.toText(occurrenceDate: occurrenceDate) : nil
+        return selectedIndexPath?.section == 1 ? recurrenceRule?.toText(occurrenceDate: occurrenceDate) : nil
     }
 
     fileprivate func updateRecurrenceRuleText() {

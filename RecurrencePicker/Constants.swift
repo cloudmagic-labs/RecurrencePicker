@@ -62,8 +62,7 @@ internal extension Constant {
 
     static func basicRecurrenceStrings(of language: RecurrencePickerLanguage = InternationalControl.shared.language) -> [String] {
         let internationalControl = InternationalControl(language: language)
-        return [internationalControl.localizedString("basicRecurrence.never"),
-                internationalControl.localizedString("basicRecurrence.everyDay"),
+        return [internationalControl.localizedString("basicRecurrence.everyDay"),
                 internationalControl.localizedString("basicRecurrence.everyWeek"),
                 internationalControl.localizedString("basicRecurrence.everyTwoWeeks"),
                 internationalControl.localizedString("basicRecurrence.everyMonth"),
